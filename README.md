@@ -8,13 +8,13 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
 ## Best Practices
 
-### Secrets
+### Secrets ✅
 
-- Keep secret tokens out of your code - `ENV` variables are a good practice
+- Keep secret tokens out of your code - `ENV` variables are a good practice ✅
 
   **Why:** You don’t want your version control host, CI provider, or any other service with access to your code to have access to your secrets. If one of these services is compromised, or a single developer’s account on one of these services is compromised, you don’t want to lose your secrets.
 
-### SQL Injection
+### SQL Injection 🔍 <i>(We need to audit for this.)</i>
 
 - Even with ActiveRecord, SQL injection is still possible if misused
 
@@ -26,7 +26,7 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
   **Why:** [This](https://guides.rubyonrails.org/security.html#sql-injection) explains it well
 
-### Host Header Injection
+### Host Header Injection 👈
 
 - Prevent [host header injection](http://carlos.bueno.org/2008/06/host-header-injection.html) - add the following to `config/environments/production.rb`
 
@@ -37,7 +37,7 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
   **Why:** An attacker can pass a bad host header. If your app uses caching, this bad host may be cached and served to other users (this can happen with `*_url` helpers).
 
-### Data in Transit
+### Data in Transit 👈
 
 - Protect all data in transit with HTTPS - you can get free SSL certificates from [Let’s Encrypt](https://letsencrypt.org/)
 
@@ -57,17 +57,17 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
   **Why:** If someone visits your website over HTTP, even if you have an HTTPS redirect, an attacker can perform a middleperson attack. [sslstrip](https://avicoder.me/2016/02/22/SSLstrip-for-newbies/) is a popular tool for this. The preload list ships with the browser and instructs it to always use HTTPS for specific domains.
 
-### Data at Rest
+### Data at Rest 👈
 
-- Protect sensitive database fields with application-level encryption - use a library like [Lockbox](https://github.com/ankane/lockbox) or [attr_encrypted](https://github.com/attr-encrypted/attr_encrypted) and possibly [KMS Encrypted](https://github.com/ankane/kms_encrypted)
+- Protect sensitive database fields with application-level encryption - use a library like [Lockbox](https://github.com/ankane/lockbox) 👈 <strike>or [attr_encrypted](https://github.com/attr-encrypted/attr_encrypted)</strike> and possibly [KMS Encrypted](https://github.com/ankane/kms_encrypted)
 
   **Why:** This protects sensitive data if the database or a database backup is compromised
 
-- Protect sensitive files with application-level encryption - use a library like [Lockbox](https://github.com/ankane/lockbox)
+- Protect sensitive files with application-level encryption - use a library like [Lockbox](https://github.com/ankane/lockbox) 🚫 <i>(We upload direct to S3 so we can't do this.)</i>
 
   **Why:** This protects sensitive data if file storage is compromised, or if someone accidentally makes an S3 bucket public
 
-- Make sure sensitive request parameters aren’t logged
+- Make sure sensitive request parameters aren’t logged 🤔 <i>(Need to think of which parameters this might be by default.)</i>
 
   ```ruby
   Rails.application.config.filter_parameters += [:credit_card_number]
@@ -79,37 +79,37 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
 ### Authentication
 
-- Use a trusted library like [Devise](https://github.com/plataformatec/devise) for authentication (see [Hardening Devise](https://ankane.org/hardening-devise) if applicable)
+- Use a trusted library like [Devise](https://github.com/plataformatec/devise) for authentication (see [Hardening Devise](https://ankane.org/hardening-devise) if applicable) ✅
 
   **Why:** Secure authentication is hard. Use a library that’s battle-tested. Don’t roll your own.
 
-- Notify users of password changes
+- Notify users of password changes 👈
 
   **Why:** So users are aware if someone tries to hijack their account
 
-- Notify users of email address changes - send an email to the old address
+- Notify users of email address changes - send an email to the old address 👈
 
   **Why:** So users can’t silently hijack the account by changing the email, then the password
 
-- Rate limit login attempts by IP with [Rack Attack](https://github.com/kickstarter/rack-attack)
+- Rate limit login attempts by IP with [Rack Attack](https://github.com/kickstarter/rack-attack) 👈
 
   **Why:** To slow down [credential stuffing](https://en.wikipedia.org/wiki/Credential_stuffing) attacks
 
-- Log all successful and failed login attempts and password reset attempts (check out [Authtrail](https://github.com/ankane/authtrail) if you use Devise)
+- Log all successful and failed login attempts and password reset attempts (check out [Authtrail](https://github.com/ankane/authtrail) if you use Devise) 👈
 
   **Why:** So you have an audit trail when accounts are compromised. You can also use this information to detect compromised accounts.
 
-- Rails has a number of gems for [authorization](https://www.ruby-toolbox.com/categories/rails_authorization) - we like [Pundit](https://github.com/elabs/pundit)
+- Rails has a number of gems for [authorization](https://www.ruby-toolbox.com/categories/rails_authorization) - we like [Pundit](https://github.com/elabs/pundit) ✅ (We use CanCanCan for this.)
 
   **Why:** To prevent users from accessing unauthorized data
 
 ### Browser Caching
 
-- Set `autocomplete="off"` for sensitive form fields, like credit card number
+- Set `autocomplete="off"` for sensitive form fields, like credit card number 🤔 <i>Need to think which fields this might be for us.</i>
 
   **Why:** So other users of the browser can’t access this saved information
 
-- Ask the browser [not to cache pages](https://stackoverflow.com/a/748646) with sensitive information
+- Ask the browser [not to cache pages](https://stackoverflow.com/a/748646) with sensitive information 👈 <i>(We need this on the API keys page.)</i>
 
   ```ruby
   response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
@@ -121,7 +121,7 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
 ### Data Leakage
 
-- Ask search engines not to index pages with secret tokens in the URL
+- Ask search engines not to index pages with secret tokens in the URL 🤔 <i>I don't think this would apply to any pages we have.</i>
 
   ```html
   <meta name="robots" content="noindex, nofollow">
@@ -131,7 +131,7 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
 ### Cross-Site Scripting (XSS)
 
-- Use `json_escape` when passing variables to JavaScript, or better yet, a library like [Gon](https://github.com/gazay/gon)
+- Use `json_escape` when passing variables to JavaScript, or better yet, a library like [Gon](https://github.com/gazay/gon) 🔍 <i>(We need to audit for this.)</i>
 
   ```erb
   <script>
@@ -141,7 +141,7 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
   **Why:** To prevent cross-site scripting (XSS)
 
-- [Be careful](https://product.reverb.com/2015/08/29/stay-safe-while-using-html_safe-in-rails/) with `html_safe`
+- [Be careful](https://product.reverb.com/2015/08/29/stay-safe-while-using-html_safe-in-rails/) with `html_safe` 🔍 <i>(We need to audit for this with the `html` attribute partial.)</i>
 
   **Why:** It bypasses escaping
 
@@ -151,8 +151,8 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
 ## Open Source Tools
 
-- [Brakeman](https://github.com/presidentbeef/brakeman) is a great static analysis tool - it scans your code for vulnerabilities
-- [bundler-audit](https://github.com/rubysec/bundler-audit) checks for vulnerable versions of gems
+- [Brakeman](https://github.com/presidentbeef/brakeman) is a great static analysis tool - it scans your code for vulnerabilities 👈
+- [bundler-audit](https://github.com/rubysec/bundler-audit) checks for vulnerable versions of gems 👈
 
   ```sh
   gem install bundler-audit
@@ -170,7 +170,7 @@ Also, check out [this guide](https://ankane.org/sensitive-data-rails) for securi
 
   And run `bundle install`.
 
-- [npm audit](https://docs.npmjs.com/getting-started/running-a-security-audit) checks for vulnerable versions of JavaScript packages (if you use `package.json`)
+- [npm audit](https://docs.npmjs.com/getting-started/running-a-security-audit) checks for vulnerable versions of JavaScript packages (if you use `package.json`) 👈
 - [git-secrets](https://github.com/awslabs/git-secrets) prevents you from committing sensitive info
 
   ```ruby
